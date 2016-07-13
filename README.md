@@ -4,7 +4,7 @@
 Package currently provides AAC parsing capabilities.  This package performs a full parse of AAC-LC and HE-AACv1 bitstreams.  Bitstreams with Parametric Stereo (HE-AACv2) are not yet supported, but AAC bitstream data and SBR data will be extracted. The AAC decode from the parsed data to LPCM (.wav) is not yet implemented.  Please help us expand and test this library!
 
 ## AACParser
-This package currently supports AAC audio data contained in an ADTS header.  All availabe data is returned in the `adts` struct and can be accessed as nested objects as presented in the AAC specification.  All parameter names shoudl be verbatim from the AAC specification, if you find an issue with this please file a bug or submit a pull request.  
+This package currently supports AAC audio data contained in an ADTS header.  All available data is returned in the `adts` struct and can be accessed as nested objects as presented in the AAC specification.  All parameter names should be verbatim from the AAC specification, if you find an issue with this please file a bug or submit a pull request.  
 
 ### AAC Types
 
@@ -17,6 +17,26 @@ This package currently supports AAC audio data contained in an ADTS header.  All
 where:
 + SBR = Spectral band replication
 + PS = Parametric Stereo
+
+### Usage
+```go
+var []byte buf
+buf = <ADTS+AAC data>
+
+// Parsing the buffer
+adts, err := aac.ParseADTS(buf)
+
+// Looping through top level elements and accessing sub-elements
+var sbr bool
+if adts.Fill_elements != nil {
+	for _, e := range adts.Fill_elements {
+		if e.Extension_payload != nil &&
+			e.Extension_payload.Extension_type == aac.EXT_SBR_DATA {
+			sbr = true
+		}
+	}
+}
+```
 
 ### VBR vs CBR
 
