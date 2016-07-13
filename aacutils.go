@@ -1,8 +1,8 @@
-package aac
+package gaad
 
 import "math"
 
-func MinInt(x int, y int) int {
+func minInt(x int, y int) int {
 	if x < y {
 		return x
 	}
@@ -10,13 +10,13 @@ func MinInt(x int, y int) int {
 }
 
 // Returns the maximum of both ints
-func MaxInt(x int, y int) int {
+func maxInt(x int, y int) int {
 	if x > y {
 		return x
 	}
 	return y
 }
 
-func AacRound(x float64) int {
+func aacRound(x float64) int {
 	return int(math.Floor(x + 0.5))
 }

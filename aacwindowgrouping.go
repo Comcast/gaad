@@ -14,7 +14,7 @@
 * limitations under the License.
  */
 
-package aac
+package gaad
 
 // num_swb_long_window param from tables 4.129 through 4.140
 // 960 uses the same tables as 1024, but can't use the last

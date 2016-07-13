@@ -14,7 +14,7 @@
 * limitations under the License.
  */
 
-package aac
+package gaad
 
 import (
 	"fmt"
@@ -113,7 +113,7 @@ func qmf_lower_boundary(bs_start_freq uint8, sfi uint8) int8 {
 
 // k_2
 func qmf_upper_boundary(bs_stop_freq uint8, sfi uint8, k0 uint8) uint8 {
-	val := MinInt(64, int(stopMin[sfi]+stopOffset[sfi][MinInt(13, int(bs_stop_freq))]))
+	val := minInt(64, int(stopMin[sfi]+stopOffset[sfi][minInt(13, int(bs_stop_freq))]))
 	return uint8(val)
 }
 
@@ -129,7 +129,7 @@ func freq_master_fs0(data *sbr_extension_data, k0 uint8, k2 uint8, bs_alter_scal
 		numBands = int((((k2 - k0 + 2) >> 2) << 1))
 	}
 
-	numBands = MinInt(63, numBands)
+	numBands = minInt(63, numBands)
 	k2Achieved := int(k0) + numBands*dk
 	k2Diff := int(k2) - k2Achieved
 
@@ -178,14 +178,14 @@ func freq_master(data *sbr_extension_data, k0 uint8, k2 uint8, bs_freq_scale uin
 	k1_f := float64(k1)
 	k2_f := float64(k2)
 	// 2 * NINT( bands * log(k1/k2) / (2*log(2)))
-	numBands0 := 2 * AacRound(bands*math.Log10(k1_f/k0_f)/(2.0*math.Log10(2)))
+	numBands0 := 2 * aacRound(bands*math.Log10(k1_f/k0_f)/(2.0*math.Log10(2)))
 
 	vDk0 := make([]int, numBands0+1)
 	// ew this is ugly...
 	for k, _ := range vDk0 {
 		// NINT( k0*(k1/k0)^((k+1)/numBands0) ) - NINT( k0*(k1/k0)^(k/numBands0) )
-		vDk0[k] = AacRound(k0_f*(math.Pow((k1_f/k0_f), float64(k+1)/float64(numBands0)))) -
-			AacRound(k0_f*math.Pow((k1_f/k0_f), float64(k)/float64(numBands0)))
+		vDk0[k] = aacRound(k0_f*(math.Pow((k1_f/k0_f), float64(k+1)/float64(numBands0)))) -
+			aacRound(k0_f*math.Pow((k1_f/k0_f), float64(k)/float64(numBands0)))
 	}
 	sort.Sort(sort.IntSlice(vDk0))
 
@@ -208,12 +208,12 @@ func freq_master(data *sbr_extension_data, k0 uint8, k2 uint8, bs_freq_scale uin
 	}
 
 	// 2 * NINT( bands * log(k2/k1) / (2*log(2)*warp) )
-	numBands1 := 2 * AacRound(bands*math.Log10(k2_f/k1_f)/(2.0*math.Log10(2.0)*warp))
+	numBands1 := 2 * aacRound(bands*math.Log10(k2_f/k1_f)/(2.0*math.Log10(2.0)*warp))
 	vDk1 := make([]int, numBands1-1)
 	for k, _ := range vDk1 {
 		// NINT( k1* (k2/k1)^((k+1)/numBands1) ) - NINT( k1* (k2/k1)^(k/numBands1) )
-		vDk1[k] = AacRound(k1_f*math.Pow(k2_f/k1_f, float64((k+1))/float64(numBands1))) -
-			AacRound(k1_f*math.Pow(k2_f/k1_f, (float64(k)/float64(numBands1))))
+		vDk1[k] = aacRound(k1_f*math.Pow(k2_f/k1_f, float64((k+1))/float64(numBands1))) -
+			aacRound(k1_f*math.Pow(k2_f/k1_f, (float64(k)/float64(numBands1))))
 	}
 	sort.Sort(sort.IntSlice(vDk1))
 
@@ -264,7 +264,7 @@ func freq_derived(data *sbr_extension_data, bs_xover_band uint8, k2 uint8) {
 	bs_noise_bands := data.Sbr_header.Bs_noise_bands
 	k2_f := float64(data.k2)
 	k_x_f := float64(data.k_x)
-	data.N_Q = uint8(MaxInt(1, AacRound(float64(bs_noise_bands)*(math.Log10(k2_f/k_x_f)/math.Log10(2)))))
+	data.N_Q = uint8(maxInt(1, aacRound(float64(bs_noise_bands)*(math.Log10(k2_f/k_x_f)/math.Log10(2)))))
 
 	data.f_tablenoise = make([]int, int(data.N_Q+1))
 	i = 0

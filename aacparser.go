@@ -14,7 +14,7 @@
 * limitations under the License.
  */
 
-package aac
+package gaad
 
 import (
 	"fmt"
@@ -1128,7 +1128,7 @@ func (adts *ADTS) ics_info(common_window bool) (*ics_info, error) {
 					info.Predictor_reset_group_num, _ = adts.reader.ReadBits(5) // predictor_reset_group_number
 				}
 
-				PRED_SFB_MAX := MinInt(int(info.Max_sfb), int(Aac_PRED_SFB_MAX[adts.sfi]))
+				PRED_SFB_MAX := minInt(int(info.Max_sfb), int(Aac_PRED_SFB_MAX[adts.sfi]))
 				info.Prediction_used = make([]bool, PRED_SFB_MAX)
 				for sfb := range info.Prediction_used {
 					info.Prediction_used[sfb], _ = adts.reader.ReadBitAsBool()
@@ -1658,7 +1658,7 @@ func (adts *ADTS) ltp_data(info *ics_info) (*ltp_data, error) {
 		}
 
 		data.Ltp_coef, _ = adts.reader.ReadBitsAsUInt8(3)
-		data.Ltp_long_used = make([]bool, MinInt(int(info.Max_sfb), int(MAX_LTP_LONG_SFB)))
+		data.Ltp_long_used = make([]bool, minInt(int(info.Max_sfb), int(MAX_LTP_LONG_SFB)))
 		for sfb := range data.Ltp_long_used {
 			data.Ltp_long_used[sfb], _ = adts.reader.ReadBitAsBool()
 		}
@@ -1670,7 +1670,7 @@ func (adts *ADTS) ltp_data(info *ics_info) (*ltp_data, error) {
 
 		data.Ltp_coef, _ = adts.reader.ReadBitsAsUInt8(3)
 		if info.Window_sequence != EIGHT_SHORT_SEQUENCE {
-			data.Ltp_long_used = make([]bool, MinInt(int(info.Max_sfb), int(MAX_LTP_LONG_SFB)))
+			data.Ltp_long_used = make([]bool, minInt(int(info.Max_sfb), int(MAX_LTP_LONG_SFB)))
 			for sfb := range data.Ltp_long_used {
 				data.Ltp_long_used[sfb], _ = adts.reader.ReadBitAsBool()
 			}
@@ -2309,7 +2309,7 @@ func (adts *ADTS) sbr_grid(ch uint, data *sbr_grid, header *sbr_header) error {
 
 		data.bs_num_env = append(
 			data.bs_num_env,
-			uint8(MinInt(5, int(data.Bs_num_rel_0[ch]+data.Bs_num_rel_1[ch]+1))),
+			uint8(minInt(5, int(data.Bs_num_rel_0[ch]+data.Bs_num_rel_1[ch]+1))),
 		)
 
 		// This is how the spec spells this section out.  We could make Bs_num_rel into

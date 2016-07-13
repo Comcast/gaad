@@ -24,14 +24,14 @@ var []byte buf
 buf = <ADTS+AAC data>
 
 // Parsing the buffer
-adts, err := aac.ParseADTS(buf)
+adts, err := gaad.ParseADTS(buf)
 
 // Looping through top level elements and accessing sub-elements
 var sbr bool
 if adts.Fill_elements != nil {
 	for _, e := range adts.Fill_elements {
 		if e.Extension_payload != nil &&
-			e.Extension_payload.Extension_type == aac.EXT_SBR_DATA {
+			e.Extension_payload.Extension_type == gaad.EXT_SBR_DATA {
 			sbr = true
 		}
 	}
