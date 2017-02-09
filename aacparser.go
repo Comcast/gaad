@@ -38,13 +38,13 @@ type ADTS struct {
 	num_raw_data_blocks uint8
 	protection_absent   bool
 
-	Single_channel_elements    []*single_channel_element
-	Channel_pair_elements      []*channel_pair_element
-	Coupleing_channel_elements []*coupling_channel_element
-	Lfe_channel_elements       []*lfe_channel_element
-	Data_stream_elements       []*data_stream_element
-	Program_config_elements    []*program_config_element
-	Fill_elements              []*fill_element
+	Single_channel_elements   []*single_channel_element
+	Channel_pair_elements     []*channel_pair_element
+	Coupling_channel_elements []*coupling_channel_element
+	Lfe_channel_elements      []*lfe_channel_element
+	Data_stream_elements      []*data_stream_element
+	Program_config_elements   []*program_config_element
+	Fill_elements             []*fill_element
 }
 
 // Begin Main AAC Element Types
@@ -1004,7 +1004,7 @@ func (adts *ADTS) raw_data_block() error {
 		case ID_CCE:
 			var e *coupling_channel_element
 			e, err = adts.coupling_channel_element()
-			adts.Coupleing_channel_elements = append(adts.Coupleing_channel_elements, e)
+			adts.Coupling_channel_elements = append(adts.Coupling_channel_elements, e)
 		case ID_LFE:
 			var e *lfe_channel_element
 			e, err = adts.lfe_channel_element()
@@ -1934,6 +1934,11 @@ func (adts *ADTS) sbr_header() (uint, *sbr_header) {
 		data.Bs_freq_scale, _ = adts.reader.ReadBitsAsUInt8(2)
 		data.Bs_alter_scale, _ = adts.reader.ReadBitsAsUInt8(1)
 		data.Bs_noise_bands, _ = adts.reader.ReadBitsAsUInt8(2)
+	} else {
+		// Defaults defined in 4.2.8.1: 4.105-4.107
+		data.Bs_freq_scale = 2
+		data.Bs_alter_scale = 1
+		data.Bs_noise_bands = 2
 	}
 
 	if data.Bs_header_extra_2 {
@@ -1941,6 +1946,12 @@ func (adts *ADTS) sbr_header() (uint, *sbr_header) {
 		data.Bs_limiter_gains, _ = adts.reader.ReadBitsAsUInt8(2)
 		data.Bs_interpol_freq, _ = adts.reader.ReadBitsAsUInt8(1)
 		data.Bs_smoothing_mode, _ = adts.reader.ReadBitsAsUInt8(1)
+	} else {
+		// Defaults defined in 4.2.8.1: 4.108-4.111
+		data.Bs_limiter_bands = 2
+		data.Bs_limiter_gains = 2
+		data.Bs_interpol_freq = 1
+		data.Bs_smoothing_mode = 1
 	}
 
 	return (start_bits - adts.reader.BitsLeft()), data
