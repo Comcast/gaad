@@ -150,8 +150,13 @@ func window_grouping(info *ics_info, sfi uint8, framelength uint16) {
 		info.window_group_length[info.num_window_groups-1] = 1
 		info.num_swb = num_swb_long_windows[idx][sfi]
 
-		info.sect_sfb_offset = append(info.sect_sfb_offset, swb_offset_long_window[sfi][:info.num_swb])
-		info.swb_offset = swb_offset_long_window[sfi][:info.num_swb]
+		t := make([]uint16, len(swb_offset_long_window[sfi][:info.num_swb]))
+		copy(t, swb_offset_long_window[sfi][:info.num_swb])
+		info.sect_sfb_offset = append(info.sect_sfb_offset, t)
+
+		t = make([]uint16, len(swb_offset_long_window[sfi][:info.num_swb]))
+		copy(t, swb_offset_long_window[sfi][:info.num_swb])
+		info.swb_offset = t
 
 		// Special cases for 960's final values so we don't have to duplicate tables
 		info.sect_sfb_offset[0] = append(info.sect_sfb_offset[0], framelength)
@@ -163,7 +168,9 @@ func window_grouping(info *ics_info, sfi uint8, framelength uint16) {
 		info.window_group_length[info.num_window_groups-1] = 1
 		info.num_swb = num_swb_short_window[sfi]
 
-		info.swb_offset = swb_offset_short_window[sfi][:info.num_swb]
+		t := make([]uint16, len(swb_offset_short_window[sfi][:info.num_swb]))
+		copy(t, swb_offset_short_window[sfi][:info.num_swb])
+		info.swb_offset = t
 		info.swb_offset = append(info.swb_offset, framelength/8)
 
 		for i := uint8(0); i < info.num_windows-1; i++ {
