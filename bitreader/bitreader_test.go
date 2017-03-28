@@ -229,6 +229,15 @@ func TestSkipBitsBytes(t *testing.T) {
 	}
 }
 
+func TestSkipBytesToEnd(t *testing.T) {
+	byteArray := []byte{0x55, 0x55}
+	reader := NewBitReader(byteArray)
+	reader.SkipBytes(reader.BytesLeft())
+	if reader.HasByteLeft() {
+		t.Errorf("HasByteLeft() must return false after skipping all remaining bytes.")
+	}
+}
+
 func TestBitsBytesLeft(t *testing.T) {
 
 	// Input: 0101 0101 0101 0101 (0x55 0x55)

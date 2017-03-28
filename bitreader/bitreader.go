@@ -312,7 +312,12 @@ func (p *BitReader) SkipBytes(n uint) error {
 	} else {
 		p.currentByteIndex += n
 		p.posInCurrentByte = 7
-		p.currentByte = p.bytes[p.currentByteIndex]
+		if p.currentByteIndex < p.length {
+
+			p.currentByte = p.bytes[p.currentByteIndex]
+		} else {
+			p.currentByte = byte(0)
+		}
 	}
 	return nil
 }
