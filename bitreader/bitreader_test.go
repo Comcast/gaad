@@ -4,8 +4,6 @@ import (
 	"encoding/hex"
 	"reflect"
 	"testing"
-
-	"github.comcast.com/viper-cog/goutil/assert"
 )
 
 var zeroToTenHex = "A64298E2048A16"
@@ -235,7 +233,9 @@ func TestSkipBytesToEnd(t *testing.T) {
 	byteArray := []byte{0x55, 0x55}
 	reader := NewBitReader(byteArray)
 	reader.SkipBytes(reader.BytesLeft())
-	assert.False(t, reader.HasByteLeft())
+	if reader.HasByteLeft() {
+		t.Errorf("HasByteLeft() must return false after skipping all remaining bytes.")
+	}
 }
 
 func TestBitsBytesLeft(t *testing.T) {
