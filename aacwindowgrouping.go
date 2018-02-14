@@ -22,8 +22,8 @@ package gaad
 // maximum index into the swb_offset tables each bitrate
 // is allowed to use
 var num_swb_long_windows = [][]uint8{
-	{40, 40, 45, 49, 49, 49, 46, 46, 42, 42, 42, 40}, // 960
-	{41, 41, 47, 49, 49, 51, 47, 47, 43, 43, 43, 40}, // 1024
+	{40, 40, 46, 49, 49, 49, 46, 46, 42, 42, 42, 40, 40}, // 960
+	{41, 41, 47, 49, 49, 51, 47, 47, 43, 43, 43, 40, 40}, // 1024
 }
 
 // num_swb_short_window param from tables 4.130 through 1.141
@@ -121,7 +121,7 @@ var swb_offset_long_window = [][]uint16{
 	swb_offset_1024_32,                     // 32000
 	swb_offset_1024_24, swb_offset_1024_24, // 24000, 22050
 	swb_offset_1024_16, swb_offset_1024_16, swb_offset_1024_16, // 16000, 12000, 11025
-	swb_offset_1024_8, // 8000
+	swb_offset_1024_8, swb_offset_1024_8, // 8000
 }
 
 var swb_offset_short_window = [][]uint16{
@@ -130,7 +130,7 @@ var swb_offset_short_window = [][]uint16{
 	swb_offset_128_48, swb_offset_128_48, swb_offset_128_48, // 48000, 44100, 32000
 	swb_offset_128_24, swb_offset_128_24, // 24000, 22050
 	swb_offset_128_16, swb_offset_128_16, swb_offset_128_16, // 16000, 12000, 11025
-	swb_offset_128_8, // 8000
+	swb_offset_128_8, swb_offset_128_8, // 8000
 }
 
 ////////////////////////////////////////////////////////////////////////////////
