@@ -264,3 +264,26 @@ func TestEightShortSequence(t *testing.T) {
 		}
 	}
 }
+
+// Fuzz testing courtesy of gy741
+func TestWindowGroupingFuzz(t *testing.T) {
+
+	var crashers = []string{
+		"\xff\xf10\x850",
+	}
+
+	for _, f := range crashers {
+		ParseADTS([]byte(f))
+	}
+}
+
+func TestADTSHeaderFuzz(t *testing.T) {
+
+	var crashers = []string{
+		"\xff\xf00000\x010",
+	}
+
+	for _, f := range crashers {
+		ParseADTS([]byte(f))
+	}
+}

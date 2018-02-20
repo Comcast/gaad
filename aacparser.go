@@ -838,7 +838,7 @@ func (adts *ADTS) adts_fixed_header() error {
 		adts.Profile += uint8(1)                                // profile object
 		adts.sfi, _ = adts.reader.ReadBitsAsUInt8(4)            // sampling_frequency_index
 		if adts.sfi > 12 {
-			return fmt.Errorf("Scale Factor Index (%d) out of acceptable range (0-12)", adts.sfi)
+			return fmt.Errorf("Sampling Frequency Index (%d) out of acceptable range (0-12)", adts.sfi)
 		}
 
 		adts.SamplingFrequency = SamplingFrequency[adts.sfi]          // sampling frequency
@@ -890,7 +890,7 @@ func (adts *ADTS) adts_header_error_check() {
 	data := &adts_header_error_check{}
 
 	if !adts.protection_absent {
-		data.Raw_data_block_position = make([]uint16, adts.num_raw_data_blocks)
+		data.Raw_data_block_position = make([]uint16, adts.num_raw_data_blocks+1)
 		for i := uint8(1); i <= adts.num_raw_data_blocks; i++ {
 			data.Raw_data_block_position[i], _ = adts.reader.ReadBitsAsUInt16(16) // raw_data_block_position
 		}
