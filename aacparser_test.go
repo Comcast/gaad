@@ -209,6 +209,10 @@ func TestSbrExists(t *testing.T) {
 			"000000000000000000000000000000000000000000000000000000000000" +
 			"001cfff95880400000211bceff7ffffffff93b2c1e82c9819345247f18ac" +
 			"ead580a6254b22aeaac4")
+	if err != nil {
+		t.Errorf("DecodeString: %s", err)
+	}
+
 	adts, err := ParseADTS(buf)
 
 	if err != nil {
@@ -228,7 +232,6 @@ func TestSbrExists(t *testing.T) {
 func TestSbrParse(t *testing.T) {
 	buf, err := base64.StdEncoding.DecodeString(
 		"//lYsED//CEblJXelQhhoI7AOFHFc2cMsXe1xEy5V4Brm15v1sz4eh7l7KRzWGdAkVA2OrmHG7LgFU0bV955cbSq3cp2WaD3C6ffadAnTyO0LAp0eHtwGg+300aUm66XufR7VGTEoqJ5sZeCebnxe5OBC1RyIkjiTBsxfxmvQ+Pw07tWjs8/DRtAqLDkM31bHKwkz3XI4eYtj9QzqmKEVyCrRm0keaDTOBlxk0A+Li2lkrjBWyvwnGH2/8xm+DSPD3itzYvkJk8q1UkEpWfqSq+SfDtYuykL63NmMahaF9hsgrTsBOqhQcBQ1xbOlVJUpetZZUVLmRYCcCVxVVEqRcBIJgggLQErUzSqDmUJQ5SUZaoYLQB2ZFKun714ZTLTCoCECqL7Lw3Iz3ybsZMtpiG+RCrAs5DacKMpmNImR9MyprUFyhLKOZZEJzTBll39USy0y2nR1keZfnZGXeB2IGMlnGm+6kKJluBqAek2ov8kqUSRqnhOUhn5djRiGQKMubUzrSEzBprrSR/5/oQNqYUB3EBrjXU9RS0DJ7OwaKERWjsxysubUGKdAH3jeEb9iJ4EIIokxrt/vwAmK9z7/gB9H0AG8yAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP//")
-
 	adts, err := ParseADTS(buf)
 	if err != nil {
 		t.Errorf("err (%s) must be nil", err.Error())
@@ -248,6 +251,9 @@ func TestSbrParse(t *testing.T) {
 func TestEightShortSequence(t *testing.T) {
 	buf, err := base64.StdEncoding.DecodeString(
 		"//FYQC3AOAE2v+oTcrBNds4KmC34SXcuXJI78bpLJJjK3ElySygIWU7DiWttnUA6dGYOwhq8LCU2rjXxxe7LpiAHOb1NzwOwQog5lWi+c5WtG8WtmBaKhodeTPZfIWe9L1wVLMlnU7pUuNlysIHrnYyC3FsZxBb5gCkQMOi1UcJ/t32juqK2nUZli+uLL/P6MRvfVytWTOMZ3SJUwp0Ii+nw0L55xE1WcRERKKsxc6Qj2zz3JTdzZlYKKCgDSAAABBfRe173cWSt4FgGRuFKBAziNCf626dvrMZIgDLJkz0QDm1JwdWdZtrRdgr6q6c5IpGM7qekCaMx2SUf1hxKfX2p8P63evN0A+E1M4AUgExBq5UxcZP/WDjafvjZeem1R3Y9ke3uzwaGqQZDSma22qFYJApP73OsIBIjk6WU3Y7CBgITOe+hpkOaZ65KnAd4foEAJK9+3PsOPgdmRZfLySssSyVX+L1emNzzYAAH//FYQCuAIAFO16CNdDsFCMVBsFBEgkRcSSEhEJIkACz6gkmNiYhmTsJzYTVy+WWjfODzgFMqE5tYKBkRkBgohZURlF7zzYdV1k602q7mAJCIVAKgnCnbeW7EaNkmwh2bqaEwWQDKZF/pnO+B4b5Po3lYegtuVHbWQHDZcPZnxE0m/Y6Iq3OrmJbR26tl/YJGgwoTMwDrLXjWufzZkYCkUi86I0bJWfMbbVe2hZjDlYyI5EoFtfLZ43d+Jb7t11DzIfOweMuNF8AGUJbMCo6vKAqDpBzTMlQySBUUApgYVHaqaabVmkHKy4FIrAiejnUl7le8Lakm7fp7rXqAhRjY3EUBL+wE7OgWVQapk2qiNr44RsLWOXVDQXkqr9TXQUdp9G58x7AHmcg8FJhhbMiC4cq55d1WL1ob3iegwAK+R9/jftT8bT/yXDhx8AsyLZUNwQssO3Xut7LNYAHA//FYQCiAHAFMF6CNFCsFDMIiMJBqNgAQSJIkSQkiQSJEWscESAPEsYOTC3Z9GXOZa2ILetFdq5+0lrUjKUUdTphAxGK2GfVltodfN4Nf5pg8Zkm7Jl0VFkD7EUr5sF+PhjWZSjkF2ulTCc6da4G46Jb3Q9pk97Aw8IPKxTKH151kBtBM5ni+dbZaF3Ld4d20J4dZhBV/ivcVucP8Y6tTMp1mohtAFWE=")
+	if err != nil {
+		t.Errorf("DecodeString: %s", err)
+	}
 	adts, err := ParseADTS(buf)
 	if err != nil {
 		t.Errorf("err (%s) must be nil", err.Error())
