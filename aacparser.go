@@ -1106,7 +1106,7 @@ func (adts *ADTS) ics_info(common_window bool) (*ics_info, error) {
 
 		window_grouping(info, adts.sfi, adts.Frame_length)
 		if info.Max_sfb > info.num_swb {
-			err = fmt.Errorf("Error: ics_info.Max_sfb (%d) must be greater than ics_info.num_swb (%d)",
+			err = fmt.Errorf("Error: ics_info.Max_sfb (%d) must be less than ics_info.num_swb (%d)",
 				info.Max_sfb, info.num_swb)
 			return nil, err
 		}
@@ -1115,7 +1115,7 @@ func (adts *ADTS) ics_info(common_window bool) (*ics_info, error) {
 
 		info.Max_sfb, _ = adts.reader.ReadBits(6)
 		if info.Max_sfb > info.num_swb {
-			err = fmt.Errorf("Error: ics_info.Max_sfb (%d) must be greater than ics_info.num_swb (%d)",
+			err = fmt.Errorf("Error: ics_info.Max_sfb (%d) must be less than ics_info.num_swb (%d)",
 				info.Max_sfb, info.num_swb)
 			return nil, err
 		}
