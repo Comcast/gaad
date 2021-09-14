@@ -22,6 +22,8 @@ import (
 	"github.com/Comcast/gaad/bitreader"
 )
 
+const MaxBitsLeft = 131072
+
 type ADTS struct {
 	Bitrate              uint32
 	ChannelConfiguration uint8
@@ -1829,7 +1831,10 @@ func (adts *ADTS) excluded_channels() (int, *excluded_channels) {
 	}
 
 	n++
-	data.Additional_excluded_chns[n-1], _ = adts.reader.ReadBitAsBool()
+
+	data.Additional_excluded_chns = make([]bool, 0)
+	additional_excluded_chn, _ := adts.reader.ReadBitAsBool()
+	data.Additional_excluded_chns = append(data.Additional_excluded_chns, additional_excluded_chn)
 	for data.Additional_excluded_chns[n-1] {
 		for i := num_excl_chan; i < num_excl_chan+7; i++ {
 			mask, _ := adts.reader.ReadBitAsBool()
@@ -1837,7 +1842,9 @@ func (adts *ADTS) excluded_channels() (int, *excluded_channels) {
 		}
 		n++
 		num_excl_chan += 7
-		data.Additional_excluded_chns[n-1], _ = adts.reader.ReadBitAsBool()
+
+		additional_excluded_chn, _ := adts.reader.ReadBitAsBool()
+		data.Additional_excluded_chns = append(data.Additional_excluded_chns, additional_excluded_chn)
 	}
 
 	return n, data
@@ -1910,6 +1917,11 @@ func (adts *ADTS) sbr_extension_data(cnt int, id_aac uint8, crc_flag bool) (int,
 	}
 
 	num_align_bits := (8*uint(cnt) - 4 - num_sbr_bits)
+
+	if 8*uint(cnt) < (4 + num_sbr_bits) {
+		return 0, data, fmt.Errorf("sbr extension payload malformed")
+	}
+
 	data.Bs_fill_bits, _ = adts.reader.ReadBitsToByteArray(num_align_bits)
 
 	return int(num_sbr_bits+num_align_bits+4) / 8, data, err
@@ -2020,6 +2032,10 @@ func (adts *ADTS) sbr_single_channel_element(ext_data *sbr_extension_data, bs_am
 		}
 
 		num_bits_left := cnt * 8
+		if num_bits_left > MaxBitsLeft {
+			return e, fmt.Errorf("Too many bits left, checl bitstream continuity")
+		}
+
 		e.Bs_extension_id = make([]uint8, 0)
 		e.Sbr_extension = make([]*sbr_extension, 0)
 		for i := 0; num_bits_left > 7; i++ {
@@ -2028,7 +2044,10 @@ func (adts *ADTS) sbr_single_channel_element(ext_data *sbr_extension_data, bs_am
 			if e.Bs_extension_id[i] == EXTENSION_ID_PS {
 				num_bits_left -= 2
 
-				bits_read, ext := adts.sbr_extension(e.Bs_extension_id[i], num_bits_left)
+				bits_read, ext, err := adts.sbr_extension(e.Bs_extension_id[i], num_bits_left)
+				if err != nil {
+					return e, err
+				}
 				e.Sbr_extension = append(e.Sbr_extension, ext)
 
 				num_bits_left -= bits_read
@@ -2128,25 +2147,37 @@ func (adts *ADTS) sbr_channel_pair_element(ext_data *sbr_extension_data, bs_amp_
 
 		// TODO: could we be a bit more graceful about this block?
 		num_bits_left := cnt * 8
-		e.Bs_extension_id = make([]uint8, 0)
-		e.Sbr_extension = make([]*sbr_extension, 0)
-		for i := 0; num_bits_left > 7; i++ {
-			ext_id, _ := adts.reader.ReadBitsAsUInt8(2)
-			e.Bs_extension_id = append(e.Bs_extension_id, ext_id)
-			if e.Bs_extension_id[i] == EXTENSION_ID_PS {
-				num_bits_left -= 2
 
-				bits_read, ext := adts.sbr_extension(e.Bs_extension_id[i], num_bits_left)
-				e.Sbr_extension = append(e.Sbr_extension, ext)
-
-				num_bits_left -= bits_read
-				if num_bits_left < 0 {
-					return e, fmt.Errorf("Error: SBR parsing overran available bits")
-				}
-			}
+		if num_bits_left > MaxBitsLeft {
+			return e, fmt.Errorf("Too many bits left, check bitstream continuity")
 		}
 
-		e.Bs_fill_bits, _ = adts.reader.ReadBitsToByteArray(num_bits_left)
+		// TODO: Uncomment this when extensions are supported.
+		// For now this is risky when the bitstream is goofed;
+		// Sometimes is tries to allocate the world.
+		// e.Bs_extension_id = make([]uint8, 0)
+		// e.Sbr_extension = make([]*sbr_extension, 0)
+		// for i := 0; num_bits_left > 7; i++ {
+		// 	ext_id, _ := adts.reader.ReadBitsAsUInt8(2)
+		// 	e.Bs_extension_id = append(e.Bs_extension_id, ext_id)
+		// 	if e.Bs_extension_id[i] == EXTENSION_ID_PS {
+		// 		num_bits_left -= 2
+
+		// 		bits_read, ext, err := adts.sbr_extension(e.Bs_extension_id[i], num_bits_left)
+		// 		if err != nil {
+		// 			return e, err
+		// 		}
+		// 		e.Sbr_extension = append(e.Sbr_extension, ext)
+
+		// 		num_bits_left -= bits_read
+		// 		if num_bits_left < 0 {
+		// 			return e, fmt.Errorf("Error: SBR parsing overran available bits")
+		// 		}
+		// 	}
+		// }
+
+		// e.Bs_fill_bits, _ = adts.reader.ReadBitsToByteArray(num_bits_left)
+		adts.reader.SkipBits(num_bits_left)
 	}
 	return e, nil
 }
@@ -2200,6 +2231,10 @@ func (adts *ADTS) sbr_channel_pair_base_element(bs_amp_res bool, ext_data *sbr_e
 
 		// TODO: could we be a bit more graceful about this block?
 		num_bits_left := cnt * 8
+		if num_bits_left > MaxBitsLeft {
+			return e, fmt.Errorf("Too many bits left, checl bitstream continuity")
+		}
+
 		e.Bs_extension_id = make([]uint8, 0)
 		e.Sbr_extension = make([]*sbr_extension, 0)
 		for i := 0; num_bits_left > 7; i++ {
@@ -2208,7 +2243,10 @@ func (adts *ADTS) sbr_channel_pair_base_element(bs_amp_res bool, ext_data *sbr_e
 			if e.Bs_extension_id[i] == EXTENSION_ID_PS {
 				num_bits_left -= 2
 
-				bits_read, ext := adts.sbr_extension(e.Bs_extension_id[i], num_bits_left)
+				bits_read, ext, err := adts.sbr_extension(e.Bs_extension_id[i], num_bits_left)
+				if err != nil {
+					return e, err
+				}
 				e.Sbr_extension = append(e.Sbr_extension, ext)
 
 				num_bits_left -= bits_read
@@ -2505,17 +2543,20 @@ func (adts *ADTS) sbr_sinusoidal_coding(ch uint8, data *sbr_sinusoidal_coding, e
 ////////////////////////////////////////////////////////////////////////////////
 // Table 8.A.1 – Syntax of sbr_extension()
 ////////////////////////////////////////////////////////////////////////////////
-func (adts *ADTS) sbr_extension(bs_extension_id uint8, num_bits_left uint) (uint, *sbr_extension) {
+func (adts *ADTS) sbr_extension(bs_extension_id uint8, num_bits_left uint) (uint, *sbr_extension, error) {
 	data := &sbr_extension{}
 	switch bs_extension_id {
 	case EXTENSION_ID_PS:
+		// he-AAC v2 - currently unsupported
 		// TODO
 		// num_bits_left -= ps_data()
+		// returning num_bits_left tells the caller that all bits have been read
+		return num_bits_left, nil, fmt.Errorf("bs_extension_id of 2 (EXTENSION_ID_PS) unsupported")
 	default:
-		data.Bs_fill_bits, _ = adts.reader.ReadBitsToByteArray(num_bits_left)
-		num_bits_left = 0
+		//data.Bs_fill_bits, _ = adts.reader.ReadBitsToByteArray(num_bits_left)
 	}
-	return num_bits_left, data
+	// returning num_bits_left tells the caller that all bits have been read
+	return num_bits_left, data, nil
 }
 
 func is_intensity(info *ics_info, group, sfb uint8) int {
