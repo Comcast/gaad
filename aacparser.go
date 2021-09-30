@@ -2033,7 +2033,7 @@ func (adts *ADTS) sbr_single_channel_element(ext_data *sbr_extension_data, bs_am
 
 		num_bits_left := cnt * 8
 		if num_bits_left > MaxBitsLeft {
-			return e, fmt.Errorf("Too many bits left, checl bitstream continuity")
+			return e, fmt.Errorf("Too many bits left, check bitstream continuity")
 		}
 
 		e.Bs_extension_id = make([]uint8, 0)
@@ -2208,7 +2208,7 @@ func (adts *ADTS) sbr_channel_pair_base_element(bs_amp_res bool, ext_data *sbr_e
 		// TODO: could we be a bit more graceful about this block?
 		num_bits_left := cnt * 8
 		if num_bits_left > MaxBitsLeft {
-			return e, fmt.Errorf("Too many bits left, checl bitstream continuity")
+			return e, fmt.Errorf("Too many bits left, check bitstream continuity")
 		}
 
 		e.Bs_extension_id = make([]uint8, 0)
