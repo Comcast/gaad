@@ -2152,31 +2152,7 @@ func (adts *ADTS) sbr_channel_pair_element(ext_data *sbr_extension_data, bs_amp_
 			return e, fmt.Errorf("Too many bits left, check bitstream continuity")
 		}
 
-		// TODO: Uncomment this when extensions are supported.
-		// For now this is risky when the bitstream is goofed;
-		// Sometimes is tries to allocate the world.
-		// e.Bs_extension_id = make([]uint8, 0)
-		// e.Sbr_extension = make([]*sbr_extension, 0)
-		// for i := 0; num_bits_left > 7; i++ {
-		// 	ext_id, _ := adts.reader.ReadBitsAsUInt8(2)
-		// 	e.Bs_extension_id = append(e.Bs_extension_id, ext_id)
-		// 	if e.Bs_extension_id[i] == EXTENSION_ID_PS {
-		// 		num_bits_left -= 2
-
-		// 		bits_read, ext, err := adts.sbr_extension(e.Bs_extension_id[i], num_bits_left)
-		// 		if err != nil {
-		// 			return e, err
-		// 		}
-		// 		e.Sbr_extension = append(e.Sbr_extension, ext)
-
-		// 		num_bits_left -= bits_read
-		// 		if num_bits_left < 0 {
-		// 			return e, fmt.Errorf("Error: SBR parsing overran available bits")
-		// 		}
-		// 	}
-		// }
-
-		// e.Bs_fill_bits, _ = adts.reader.ReadBitsToByteArray(num_bits_left)
+		// Extentions are currently unsupported
 		adts.reader.SkipBits(num_bits_left)
 	}
 	return e, nil

@@ -249,14 +249,16 @@ func freq_derived(data *sbr_extension_data, bs_xover_band uint8, k2 uint8) error
 	data.n[0] = data.N_low
 	data.n[1] = data.N_high
 
+	index := data.N_high + bs_xover_band + 1
+
 	// check for overflow or upper bounds
-	if data.N_high+bs_xover_band+1 < bs_xover_band || len(data.f_master) < int(data.N_high+bs_xover_band+1) {
-		return fmt.Errorf("f_tablehigh invalid index, likely malformed")
+	if index < bs_xover_band || len(data.f_master) < int(index) {
+		return fmt.Errorf("f_tablehigh invalid index: index (%d) must be between bs_xover_band (%d) and length of f_master (%d)", index, bs_xover_band, len(data.f_master))
 	}
-	data.f_tablehigh = data.f_master[bs_xover_band : data.N_high+bs_xover_band+1]
-	// index out of range [255] with len 0
+	data.f_tablehigh = data.f_master[bs_xover_band:index]
+	// check f_tablehigh bounds
 	if len(data.f_tablehigh) < int(data.N_high) {
-		return fmt.Errorf("f_tablehigh invalid index, likely malformed")
+		return fmt.Errorf("N_high index (%d) too high for length of f_tablehigh (%d)", data.N_high, len(data.f_tablehigh))
 	}
 	data.M = uint8(data.f_tablehigh[data.N_high] - data.f_tablehigh[0])
 	data.k_x = data.f_tablehigh[0]
