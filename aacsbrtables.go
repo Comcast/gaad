@@ -85,7 +85,9 @@ func derive_sbr_tables(data *sbr_extension_data, sfi uint8, bs_start_freq uint8,
 	} else {
 		freq_master(data, data.k0, data.k2, bs_freq_scale, bs_alter_scale)
 	}
-	freq_derived(data, bs_xover_band, data.k2)
+	if err := freq_derived(data, bs_xover_band, data.k2); err != nil {
+		return err
+	}
 
 	return nil
 }
@@ -239,7 +241,7 @@ func freq_master(data *sbr_extension_data, k0 uint8, k2 uint8, bs_freq_scale uin
 	data.f_master = append(data.f_master, vk1...)
 }
 
-func freq_derived(data *sbr_extension_data, bs_xover_band uint8, k2 uint8) {
+func freq_derived(data *sbr_extension_data, bs_xover_band uint8, k2 uint8) error {
 	data.N_high = data.N_master - bs_xover_band
 	data.N_low = (data.N_high >> 1) + (data.N_high - (data.N_high>>1)<<1)
 
@@ -247,7 +249,17 @@ func freq_derived(data *sbr_extension_data, bs_xover_band uint8, k2 uint8) {
 	data.n[0] = data.N_low
 	data.n[1] = data.N_high
 
-	data.f_tablehigh = data.f_master[bs_xover_band : data.N_high+bs_xover_band+1]
+	index := data.N_high + bs_xover_band + 1
+
+	// check for overflow or upper bounds
+	if index < bs_xover_band || len(data.f_master) < int(index) {
+		return fmt.Errorf("f_tablehigh invalid index: index (%d) must be between bs_xover_band (%d) and length of f_master (%d)", index, bs_xover_band, len(data.f_master))
+	}
+	data.f_tablehigh = data.f_master[bs_xover_band:index]
+	// check f_tablehigh bounds
+	if len(data.f_tablehigh) < int(data.N_high) {
+		return fmt.Errorf("N_high index (%d) too high for length of f_tablehigh (%d)", data.N_high, len(data.f_tablehigh))
+	}
 	data.M = uint8(data.f_tablehigh[data.N_high] - data.f_tablehigh[0])
 	data.k_x = data.f_tablehigh[0]
 
@@ -274,6 +286,8 @@ func freq_derived(data *sbr_extension_data, bs_xover_band uint8, k2 uint8) {
 		}
 		data.f_tablenoise[k] = data.f_tablelow[i]
 	}
+
+	return nil
 }
 
 // TODO: Implement freq_limiter table
