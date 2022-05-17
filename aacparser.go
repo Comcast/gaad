@@ -422,7 +422,7 @@ type sbr_channel_pair_enhance_element struct {
 }
 
 type sbr_grid struct {
-	Bs_frame_class uint8
+	Bs_frame_class [2]uint8
 
 	Tmp         uint8 // Yes, this is an official bit field in the spec...
 	Bs_freq_res [][]uint8
@@ -2262,8 +2262,8 @@ func (adts *ADTS) sbr_channel_pair_enhance_element(bs_amp_res bool) *sbr_channel
 // Table 4.69 – Syntax of sbr_grid()
 ////////////////////////////////////////////////////////////////////////////////
 func (adts *ADTS) sbr_grid(ch uint, data *sbr_grid, header *sbr_header) error {
-	data.Bs_frame_class, _ = adts.reader.ReadBitsAsUInt8(2)
-	switch data.Bs_frame_class {
+	data.Bs_frame_class[ch], _ = adts.reader.ReadBitsAsUInt8(2)
+	switch data.Bs_frame_class[ch] {
 	case FIXFIX:
 		data.Tmp, _ = adts.reader.ReadBitsAsUInt8(2)
 		data.bs_num_env = append(data.bs_num_env, 1<<data.Tmp)
@@ -2408,7 +2408,7 @@ func (adts *ADTS) sbr_envelope(
 	var f_huff [][]int8
 
 	amp_res := bs_amp_res
-	if grid.bs_num_env[ch] == 1 && grid.Bs_frame_class == FIXFIX {
+	if grid.bs_num_env[ch] == 1 && grid.Bs_frame_class[ch] == FIXFIX {
 		amp_res = false
 	}
 
