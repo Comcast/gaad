@@ -228,6 +228,24 @@ func TestSbrExists(t *testing.T) {
 	}
 }
 
+func TestSbrChannelPairElementParse(t *testing.T) {
+	buf, err := base64.StdEncoding.DecodeString(
+		"//FYgD+BnCEbQ9uJooYaHEyKrWaAZUmYoqZdSkJUqh/ZoD0ZT3iVbMTgNe8FuI6HSt1vZoAcY13PUkjIqz2PXN82feqhznnAoQwAnAYzxDC3VbYX7x1oyZMJJDh0nozSuFKVaJUjeJVUi01puKLL3LdgXpQyDr0hZa9PAvAtQvxBLVNTXGa6FRWh2VU1r+fA3WhRZP1ChIYijIlCvUJgErbYRTWCgmIghE9cuudbSXxrNF5VNQ3LbkkuRBA6hl73rHJa8C2vUAhslyiC8nspS800OvMc3YzrTHnNlrcYMCXC/Bwha6I5KDVXi3O5UQaDWyinMlymVxOeNUp3FbdbWC4+KfCKGNPbI0aNSYxoo1b0xpUqoWRTZ1p8UU5gqnHFRzrmnThZGNyD8MZa7Y/NYOdthRkyZyD+S1nc0HDm2WoPc7O23AWWNkcLa/kTFekvbxFTk6DcJjxM3IQeqK2gKo5NynkRqIKyFspol79egkg3O8DIf68aWV/C4qjg0r5ODFsMHZQfTQI7ukK2Fh33vrHrN2OlhayZAQJp0gE2DCaInTHGgCpmmag8WmNqWBDZmRmZgmxZobHrmRPKCRtiEkAX8pJblEvdB61vNxNE3WJlvefJV7Y+FLJAXUA3gG8N37ATwNsYoCIAAAAAE/fwe/879/u5fmSNCBAA8w==")
+	adts, err := ParseADTS(buf)
+	if err != nil {
+		t.Errorf("err (%s) must be nil", err.Error())
+	}
+	if adts.Fill_elements == nil {
+		t.Errorf("Fill_elements cannot be nil")
+	}
+	if adts.Fill_elements[0].Extension_payload == nil {
+		t.Errorf("Extension_payload cannot be nil")
+	}
+	if int(adts.Fill_elements[0].Extension_payload.Extension_type) != EXT_SBR_DATA {
+		t.Errorf("Extension_type (%d) must be of type EXT_SBR_DATA (%d)", adts.Fill_elements[0].Extension_payload.Extension_type, EXT_SBR_DATA)
+	}
+}
+
 // AAC Audio frame with a full, parsable SBR
 func TestSbrParse(t *testing.T) {
 	buf, err := base64.StdEncoding.DecodeString(
