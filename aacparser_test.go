@@ -57,7 +57,9 @@ func TestAacLcADTS(t *testing.T) {
 	}
 }
 
-func TestHeAacAdts(t *testing.T) {
+// TestTruncatedHeAacAdts parses a truncated ADTS payload from an HE-AAC stream
+// The SBR fill element(s) are missing, so the ADTS is treated as an AAC-LC stream
+func TestTruncatedHeAacAdts(t *testing.T) {
 	// ID                                       : 482 (0x1E2)
 	// Menu ID                                  : 1 (0x1)
 	// Format                                   : AAC
@@ -81,15 +83,55 @@ func TestHeAacAdts(t *testing.T) {
 	if err == nil {
 		t.Errorf("This buffer is truncated, err must not be nil")
 	}
+	if adts.Profile != AUDIO_OBJECT_TYPE_AAC_LC {
+		t.Errorf("expected AAC-LC audio object type, but got [%s]", AACProfileType[adts.Profile])
+	}
 	if adts.MpegVersion != uint8(0) {
 		t.Errorf("MpegVersion (%d) must be equal to 0", adts.MpegVersion)
 	}
 	if adts.ChannelConfiguration != uint8(2) {
 		t.Errorf("ChannelConfiguration (%d) must be equal to 2", adts.ChannelConfiguration)
 	}
+	if len(adts.Fill_elements) != 0 {
+		t.Errorf("truncated ADTS incorrectly contains [%d] fill elements", len(adts.Fill_elements))
+	}
 }
 
-func TestAacLcSBR(t *testing.T) {
+// TestCompleteHeAacAdts parses a complete ADTS payload from an HE-AAC stream
+// It contains an audio object type of 2 (AAC-LC) and SBR fill element(s)
+func TestCompleteHeAacAdts(t *testing.T) {
+	buf, _ := hex.DecodeString("fff958b0415ffc212bd45dbead086098592374099a4d64e8b54440b525a26029e59f35e0770ef36dce33df9de432e08db2e27a323fd17268baae067abfcac022971120aed0e51d6f30df6ad3171bbb29fc1074ea74a5430a2b12730c53d5cc663fa1fe25a2deecf807da2ab58a07d4fede8794c1f60d63206131f3ec4d2ec29880f0d30c55fdbda464b7b50201c9039d9b9ab1fc786b6d7c28985d307c5d0a73ef0fc1cfed4672100c3ad2fcdb6b9c95ea101244e0e3c7a0035fe97d8ec725415ce5168bc708559f6f4adde078c485d0755b16b55f3e71a951f63a7fa724a9bc9b0498c939b9c699c5b930a39445f46583388c47d7f43eb6ac3a083375cd01a38b4bcf1be1d91ef950501d682de2f0ec1d8fdcf178f7363afc78b5a2f1e3571ade7cd823efaee0f425614e060d154aee62c7459aea2e0ea1fa387771a49233dbd0d02770cd5ef6255d22cd505b64157eae1d14baadad44b95947d263ca996882f68f64e1efd5e123047b94240ebe89ad65953685d782fd3d5d58980219288caae78063a73e35096fc6a9a77412255d61988564f6413af0d8265bc22eac129c1bd2ea2a12974a98cce864c8a6fc0dc14ed8a44935be594551a294b48811754029a34b490c2f8dcd5386f46c0f10f886b5b1ad0ac2cba6c86c93303bac73129779d933fd03a4fda63e95fd4f04402803f01bc277fc04f06355451083cf91b1740083cfa1b0e981f40fa03cfff958b04f9ffc214fc7445ba5199a9b71da2bfcdfb4a0adc5d4cd24d27c896c971a5fa16955c569a7f7533535599d6a690a53216411096e1bac9c9572fcb6f774c85b074d6206770c276b32d563adcbf45205c62ca854f72e2a78adb456dee22560b576454f4ac6e1ec57f41a327fdc8db54f20ba888ba21db73ee28592e0f2cd91014ef4a4632622f2341e7c164ce2ed8ba0a3855918c8da64c66b2bfd51b046ba263cb0e49fdd1bf771ee0ed1c7ef2ae8b751a994945e92bb65a5279121a79010715d8eef7f181518c2c5dc364176b6dd17c672edd218e357869d39b401118b5edac6891a7a68c4a88a8c5dd35058d53079f10546de80569c844fee2f9f91eb807bfc350f3fdb326179a099cd2d8735934c5b1e2654373ecbc59ea39e97e51d76b3b37fb7ebde73412c843a142c9273e5d06493424eb6009cf3cdb81188220117889b0c4828ac115c87c8fa3b606b5bdb57e4f04bc2a0018396ce0d602d7f4e2c4df680c8245c1f55472d7bf0039da3582ff17a209851fdad27ed10d21968993e0e97f416ff19fcbdb58a5a4971f297465d62cea6a0936306a60e9dec5d85f038ab91cba0c656d43155bfd3fd1d2c0f29aae675429dbb3a1486e783d7f61ffe9dcba04aada73cdf1d6eabd9d5e0b1759a656955af23483afb9a491579af5539e29e5399b8c79e1cf1190fc2f18a0410ea841dfd55d39d1d8ea9639b873d619ad5ffc83ba1596cd73fb4b0cd16eeba9f22e96c1b53fa0ca53a434735e37c8d5643cc76af43f39e7c66357577f6105e97a9725597fdff76d08badd24d67ecd068054eb1ed5cea9ffecfad03386539c5f47b820e51196e75007e43f21f90fca14a643784eff809e0c6aa8a21addb7204f64032b6e811ec03e81f4070")
+	adts, err := ParseADTS(buf)
+	if err != nil {
+		t.Errorf("err [%s] must be nil", err.Error())
+	}
+
+	if adts.Profile != AUDIO_OBJECT_TYPE_AAC_LC {
+		t.Errorf("expected AAC-LC audio object type, but got [%s]", AACProfileType[adts.Profile])
+	}
+
+	if len(adts.Fill_elements) == 0 {
+		t.Error("complete HE-AAC ADTS is missing fill element(s)")
+	}
+
+	hasSBR := false
+	for _, e := range adts.Fill_elements {
+		if e.Extension_payload.Extension_type == EXT_SBR_DATA || e.Extension_payload.Extension_type == EXT_SBR_DATA_CRC {
+			hasSBR = true
+			break
+		}
+	}
+
+	if !hasSBR {
+		t.Error("complete HE-AAC ADTS is missing SBR element")
+	}
+
+	if adts.SamplingFrequency != 48000 {
+		t.Errorf("expected HE-AAC sampling frequency [%d], got [%d]", 48000, adts.SamplingFrequency)
+	}
+}
+
+func TestAacLcNoSBR(t *testing.T) {
 	// Complete name                            : /mnt/jitp/columbus_test_assets/d4_HDCC0056300001984003_new_1850/1.ts
 	// ID                                       : 257 (0x101)
 	// Menu ID                                  : 1 (0x1)

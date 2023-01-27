@@ -1899,16 +1899,21 @@ func (adts *ADTS) sbr_extension_data(cnt int, id_aac uint8, crc_flag bool) (int,
 	if data.Sbr_header != nil {
 		// Sampling freq for the sbr is twice the stream sample rate (4.6.18.2.5).  This means the sbr
 		// sampling freq index moves down by 3, except for 0, 1, 2 and 12
-		sfi := int(adts.sfi) - 3
-		if sfi < 0 {
-			sfi = 0
-		} else if sfi > 8 {
-			sfi = 8
+		adjustedSFI := int(adts.sfi) - 3
+		if adjustedSFI < 0 {
+			adjustedSFI = 0
+		} else if adjustedSFI > 8 {
+			adjustedSFI = 8
 		}
 
-		adts.SamplingFrequency = SamplingFrequency[sfi]
+		// for implicitly-signaled SBR streams, output sample rate is twice the parsed sampling frequency
+		// per ISO/IEC 14496-3:2019 1.6.5.2 and 1.6.5.3
+		//
+		// by using the adjusted sampling frequency index, adts.SamplingFrequency is doubled
+		// NOTE: this does not account for the "decoder level" caveat in ISO/IEC 14496-3:2019 1.6.5.3
+		adts.SamplingFrequency = SamplingFrequency[adjustedSFI]
 
-		err = derive_sbr_tables(data, uint8(sfi), data.Sbr_header.Bs_start_freq, data.Sbr_header.Bs_stop_freq,
+		err = derive_sbr_tables(data, uint8(adjustedSFI), data.Sbr_header.Bs_start_freq, data.Sbr_header.Bs_stop_freq,
 			data.Sbr_header.Bs_freq_scale, data.Sbr_header.Bs_alter_scale, data.Sbr_header.Bs_xover_band)
 		if err != nil {
 			return 0, data, err
