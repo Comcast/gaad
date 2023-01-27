@@ -1906,6 +1906,8 @@ func (adts *ADTS) sbr_extension_data(cnt int, id_aac uint8, crc_flag bool) (int,
 			sfi = 8
 		}
 
+		adts.SamplingFrequency = SamplingFrequency[sfi]
+
 		err = derive_sbr_tables(data, uint8(sfi), data.Sbr_header.Bs_start_freq, data.Sbr_header.Bs_stop_freq,
 			data.Sbr_header.Bs_freq_scale, data.Sbr_header.Bs_alter_scale, data.Sbr_header.Bs_xover_band)
 		if err != nil {
